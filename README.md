@@ -28,11 +28,11 @@ go install github.com/archsocket/op-env@latest
 
 ## Usage
 
-| Flag      | Description                                                                                                    |
-| --------- | -------------------------------------------------------------------------------------------------------------- |
-| `--token` | 1Password service account token. Can also be set via the `OP_SERVICE_ACCOUNT_TOKEN` environment variable.      |
-| `--vault` | Name or ID of a 1Password vault to export. Can be specified multiple times. Defaults to all accessible vaults. |
-| `--file`  | Output filename (default: `.env`)                                                                              |
+| Flag      | Description                                                                                               |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| `--token` | 1Password service account token. Can also be set via the `OP_SERVICE_ACCOUNT_TOKEN` env variable.         |
+| `--vault` | Name or ID of a 1Password vault to export. Can be used multiple times. Defaults to all accessible vaults. |
+| `--out`   | Output filename. Use `-` to write to stdout. (default: `.env`)                                            |
 
 ## Examples
 
@@ -49,7 +49,12 @@ op-env --vault "Engineering" --vault "Production"
 
 ### Write output to a custom file
 ```bash
-op-env --file app.env
+op-env --out app.env
+```
+
+### Write output to stdout
+```bash
+op-env --out -
 ```
 
 ## How It Works

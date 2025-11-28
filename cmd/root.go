@@ -3,12 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strings"
 
 	"github.com/1password/onepassword-sdk-go"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var rootCmd = &cobra.Command{
@@ -46,14 +48,17 @@ func RunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	file, err := cmd.Flags().GetString("file")
+	out, err := cmd.Flags().GetString("out")
 	if err != nil {
 		return err
+	}
+	if out == "" {
+		return fmt.Errorf("out not specified")
 	}
 	client, err := onepassword.NewClient(
 		context.TODO(),
 		onepassword.WithServiceAccountToken(token),
-		onepassword.WithIntegrationInfo("OP-ENV", "v1.0.0"),
+		onepassword.WithIntegrationInfo("OP-ENV", "v1.1.0"),
 	)
 	if err != nil {
 		return err
@@ -105,17 +110,23 @@ func RunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 	}
-	fileWriter, err := os.Create(file)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if cerr := fileWriter.Close(); cerr != nil && err == nil {
-			err = cerr
+	var writer io.Writer
+	if out == "-" {
+		writer = os.Stdout
+	} else {
+		fileWriter, err := os.Create(out)
+		if err != nil {
+			return err
 		}
-	}()
+		defer func() {
+			if cerr := fileWriter.Close(); cerr != nil && err == nil {
+				err = cerr
+			}
+		}()
+		writer = fileWriter
+	}
 	for key, value := range env {
-		if _, err := fmt.Fprintf(fileWriter, "%s=\"%s\"\n", key, strings.ReplaceAll(strings.ReplaceAll(value, "\n", "\\n"), "\"", "\\\"")); err != nil {
+		if _, err := fmt.Fprintf(writer, "%s=\"%s\"\n", key, strings.ReplaceAll(strings.ReplaceAll(value, "\n", "\\n"), "\"", "\\\"")); err != nil {
 			return err
 		}
 	}
@@ -129,8 +140,17 @@ func Execute() {
 	}
 }
 
+func Normalize(f *pflag.FlagSet, name string) pflag.NormalizedName {
+	switch name {
+	case "file":
+		name = "out"
+	}
+	return pflag.NormalizedName(name)
+}
+
 func init() {
-	rootCmd.Flags().String("token", "", "1Password service account token. Can also be set via the OP_SERVICE_ACCOUNT_TOKEN environment variable.")
-	rootCmd.Flags().StringSlice("vault", nil, "Name or ID of a 1Password vault to export. Can be specified multiple times. Defaults to all accessible vaults.")
-	rootCmd.Flags().String("file", ".env", "Output filename")
+	rootCmd.Flags().SetNormalizeFunc(Normalize)
+	rootCmd.Flags().StringP("token", "t", "", "1Password service account token. Can also be set via the OP_SERVICE_ACCOUNT_TOKEN environment variable.")
+	rootCmd.Flags().StringSliceP("vault", "v", nil, "Name or ID of a 1Password vault to export. Can be specified multiple times. Defaults to all accessible vaults.")
+	rootCmd.Flags().StringP("out", "o", ".env", "Output to a file. Use \"-\" to write to stdout.")
 }
