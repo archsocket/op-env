@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +44,11 @@ func handleRun(cmd *cobra.Command, args []string) error {
 	process := exec.Command(args[0], args[1:]...)
 	process.Env = os.Environ()
 	for key, value := range env {
-		process.Env = append(process.Env, fmt.Sprintf("%s=%s", key, value))
+		envVar, err := godotenv.Marshal(map[string]string{key: value})
+		if err != nil {
+			return err
+		}
+		process.Env = append(process.Env, envVar)
 	}
 	process.Stderr = os.Stderr
 	process.Stdin = os.Stdin

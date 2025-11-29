@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -59,10 +59,12 @@ func handleRoot(cmd *cobra.Command, args []string) error {
 		}()
 		writer = fileWriter
 	}
-	for key, value := range env {
-		if _, err := fmt.Fprintf(writer, "%s=\"%s\"\n", key, strings.ReplaceAll(strings.ReplaceAll(value, "\n", "\\n"), "\"", "\\\"")); err != nil {
-			return err
-		}
+	envString, err := godotenv.Marshal(env)
+	if err != nil {
+		return err
+	}
+	if _, err := io.WriteString(writer, envString); err != nil {
+		return err
 	}
 	return nil
 }
