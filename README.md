@@ -4,7 +4,7 @@
 
 # op-env
 
-op-env is a CLI tool that converts items from one or more 1Password vaults into a .env (dotenv) file.
+op-env is a CLI tool that converts items from one or more 1Password vaults into a .env (dotenv) file, or injects items directly into a new process as environment variables.
 
 It simplifies integrating 1Password with application deployments by exporting vault contents as environment variables.
 
@@ -19,6 +19,8 @@ It simplifies integrating 1Password with application deployments by exporting va
 * Supports multiline values and escapes quotes/newlines
 
 * Outputs a valid .env file
+
+* Run a command with 1Password items injected as environment variables (`op-env run`)  
 
 ## Installation
 
@@ -54,11 +56,27 @@ docker pull ghcr.io/archsocket/op-env:latest
 
 ## Usage
 
+### Commands
+
+| Command      | Description                                                                  |
+| ------------ | ---------------------------------------------------------------------------- |
+| `op-env`     | Export vault items into a `.env` file (default behavior).                    |
+| `op-env run` | Start a new process with vault items injected as environment variables.      |
+
+
+### Shared Flags
+
+
 | Flag      | Description                                                                                               |
 | --------- | --------------------------------------------------------------------------------------------------------- |
 | `--token` | 1Password service account token. Can also be set via the `OP_SERVICE_ACCOUNT_TOKEN` env variable.         |
 | `--vault` | Name or ID of a 1Password vault to export. Can be used multiple times. Defaults to all accessible vaults. |
-| `--out`   | Output filename. Use `-` to write to stdout. (default: `.env`)                                            |
+
+### Additional Flags
+
+| Command      | Flag     | Description                                       |
+| ------------ | -------- | ------------------------------------------------- |
+| `op-env`     | `--out`  | Output file (default: `.env`, use `-` for stdout) |
 
 ## Examples
 
@@ -81,6 +99,11 @@ op-env --out app.env
 ### Write output to stdout
 ```bash
 op-env --out -
+```
+
+### Run a local script with secrets injected
+```bash
+op-env run ./start-server.sh
 ```
 
 ### Docker
