@@ -22,8 +22,34 @@ It simplifies integrating 1Password with application deployments by exporting va
 
 ## Installation
 
-```
+### a) [Go Install](https://go.dev/doc/install)
+```bash
 go install github.com/archsocket/op-env@latest
+```
+
+### b) [Direct Binary Download](https://github.com/archsocket/op-env/releases)
+```
+https://github.com/archsocket/op-env/releases/download/{VERSION}/op-env_{OS}_{ARCH}
+```
+
+Path parameters:
+* `version`:
+    * See [Tags](https://github.com/archsocket/op-env/tags) for possible values.
+* `os`:
+    * Possible values: `linux`, `windows`, `darwin`
+* `arch`:
+    * Possible values: `amd64`, `arm64`
+
+Example with linux amd64:
+```bash
+wget https://github.com/archsocket/op-env/releases/download/v1.1.0/op-env_linux_amd64
+chmod +x op-env_linux_amd64
+sudo mv op-env_linux_amd64 /usr/local/bin/op-env
+```
+
+### c) [Docker](https://github.com/archsocket/op-env/pkgs/container/op-env)
+```bash
+docker pull ghcr.io/archsocket/op-env:latest
 ```
 
 ## Usage
@@ -56,6 +82,30 @@ op-env --out app.env
 ```bash
 op-env --out -
 ```
+
+### Docker
+
+Unix
+```bash
+docker run --rm \
+    -e OP_SERVICE_ACCOUNT_TOKEN=$OP_SERVICE_ACCOUNT_TOKEN \
+    -v "$PWD:/out" \
+    ghcr.io/archsocket/op-env:latest \
+    op-env \
+    --out ./out/.env
+```
+</details>
+
+Windows
+```bash
+docker run --rm \
+    -e "OP_SERVICE_ACCOUNT_TOKEN=$OP_SERVICE_ACCOUNT_TOKEN" \
+    -v "$(pwd -W):/out" \
+    ghcr.io/archsocket/op-env:latest \
+    op-env \
+    --out ./out/.env
+```
+</details>
 
 ## How It Works
 
@@ -106,7 +156,7 @@ API_CREDENTIALS_SECRET="def456"
 
 Clone the repo and build:
 ```bash
-git clone https://github.com/archsocket/op-env.git
+git clone git@github.com:archsocket/op-env.git
 cd op-env
 go build
 ```
